@@ -7,8 +7,7 @@ CENG313 term project. We work on the Kaggle competition
 
 | Name | Student ID | GitHub |
 |------|------------|--------|
-| Name Surname | 20XXXXXXX | [@username](https://github.com/username) |
-| Name Surname | 20XXXXXXX | [@username](https://github.com/username) |
+| Cemil Kutay Özkul | 23118080018 | [@Kutay33](https://github.com/Kutay33) |
 
 ## Competition
 
@@ -68,10 +67,10 @@ Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into 
 
 ## Progress log
 
-| Date | Member | Work done |
-|------|--------|-----------|
-| YYYY-MM-DD | | Repository created, README skeleton, data loading and metric helpers |
-| YYYY-MM-DD | | EDA notebook |
+| Date | Work done |
+|------|-----------|
+| 2026-11-05 | Repository created, README skeleton, data loading and metric helpers |
+| 2026-11-05 | EDA notebook |
 
 ## Kaggle submission history
 
