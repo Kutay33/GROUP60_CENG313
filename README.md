@@ -71,6 +71,7 @@ Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into 
 |------|-----------|
 | 2026-11-05 | Repository created, README skeleton, data loading and metric helpers |
 | 2026-11-05 | EDA notebook |
+| 2026-11-05 | Ran EDA on real data, fixed Colab setup cell, wrote EDA takeaways |
 
 ## Kaggle submission history
 
