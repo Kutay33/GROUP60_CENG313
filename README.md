@@ -1,0 +1,80 @@
+# GROUP60_CENG313 – Hull Tactical Market Prediction
+
+CENG313 term project. We work on the Kaggle competition
+**[Hull Tactical – Market Prediction](https://www.kaggle.com/competitions/hull-tactical-market-prediction)**.
+
+## Team
+
+| Name | Student ID | GitHub |
+|------|------------|--------|
+| Name Surname | 20XXXXXXX | [@username](https://github.com/username) |
+| Name Surname | 20XXXXXXX | [@username](https://github.com/username) |
+
+## Competition
+
+Every trading day we decide how much of the S&P 500 to hold. The prediction is a **position between 0 and 2**
+(0 = all cash, 1 = fully invested, 2 = 2× leverage). The score is a **volatility‑adjusted Sharpe ratio**:
+the Sharpe ratio is penalised when the strategy is more than 1.2× as volatile as the market or earns less
+than the market. Submissions run as Kaggle notebooks through the competition's evaluation API, one day at a time.
+
+## Dataset
+
+- `train.csv` – one row per trading day (`date_id`), several decades of history.
+  - Features grouped by prefix: **D** (dummies), **E** (macro), **I** (interest rates), **M** (market dynamics),
+    **P** (price/valuation), **S** (sentiment), **V** (volatility).
+  - Targets: `forward_returns`, `risk_free_rate`, `market_forward_excess_returns`.
+- `test.csv` – same features plus lagged returns and an `is_scored` flag.
+
+The data is not stored in this repository (see `.gitignore`); the notebooks download it with the Kaggle API.
+
+## Approach
+
+**Assignment 1 – EDA & baselines** (`assignment1_eda_baseline.ipynb`)
+- EDA: missing‑value structure, target distribution, volatility clustering, feature–target correlations and their stability.
+- Baselines: *(in progress)*
+
+**Assignment 2 – Proposed solution** (`assignment2_solution.ipynb`)
+- *(to be added)*
+
+## Results
+
+| Model | CV adjusted Sharpe | Kaggle public score |
+|-------|-------------------:|--------------------:|
+| *(to be filled)* | | |
+
+## Repository layout
+
+```
+GROUP60_CENG313/
+├── README.md
+├── requirements.txt
+├── assignment1_eda_baseline.ipynb
+├── assignment2_solution.ipynb      (Assignment 2)
+└── src/
+    ├── data.py      loading, feature groups, missing values, time-series splits
+    ├── models.py    baseline and proposed models (Assignment 1 step 2)
+    └── utils.py     competition metric, backtest, plots
+```
+
+## How to run
+
+1. Open a notebook in Google Colab (File → Open notebook → GitHub → paste this repo URL).
+2. Run the first cell. It clones the repo, asks for your `kaggle.json`
+   (Kaggle → Settings → API → *Create New Token*) and downloads the data to `data/`.
+   You must have joined the competition on Kaggle first.
+3. Run the remaining cells.
+
+Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into `data/`, then start Jupyter.
+
+## Progress log
+
+| Date | Member | Work done |
+|------|--------|-----------|
+| YYYY-MM-DD | | Repository created, README skeleton, data loading and metric helpers |
+| YYYY-MM-DD | | EDA notebook |
+
+## Kaggle submission history
+
+| Date | Notebook / version | Model | Public score |
+|------|--------------------|-------|-------------:|
+| | | | |
