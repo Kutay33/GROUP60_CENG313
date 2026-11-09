@@ -30,16 +30,25 @@ The data is not stored in this repository (see `.gitignore`); the notebooks down
 
 **Assignment 1 – EDA & baselines** (`assignment1_eda_baseline.ipynb`)
 - EDA: missing‑value structure, target distribution, volatility clustering, feature–target correlations and their stability.
-- Baselines: *(in progress)*
+- Baselines (`src/models.py`), compared with 5-fold walk-forward validation:
+  buy & hold, best past constant, volatility targeting (21/63 days), 1-year momentum, Ridge and ElasticNet on all features.
 
 **Assignment 2 – Proposed solution** (`assignment2_solution.ipynb`)
 - *(to be added)*
 
 ## Results
 
-| Model | CV adjusted Sharpe | Kaggle public score |
-|-------|-------------------:|--------------------:|
-| *(to be filled)* | | |
+Mean competition score (adjusted Sharpe) over 5 walk-forward folds (validation from date_id 2348 to 9047).
+
+| Model | CV adjusted Sharpe | Folds beating buy & hold | Kaggle public score |
+|-------|-------------------:|:------------------------:|--------------------:|
+| Volatility targeting (21 d) | **0.452** | 4 / 5 | |
+| Momentum (252 d) | 0.436 | 3 / 5 | |
+| Volatility targeting (63 d) | 0.420 | 2 / 5 | |
+| Buy & hold (position = 1) | 0.418 | – | |
+| ElasticNet | 0.390 | 2 / 5 | |
+| Ridge | 0.327 | 1 / 5 | |
+| Best past constant | 0.315 | 1 / 5 | |
 
 ## Repository layout
 
@@ -51,15 +60,16 @@ GROUP60_CENG313/
 ├── assignment2_solution.ipynb      (Assignment 2)
 └── src/
     ├── data.py      loading, feature groups, missing values, time-series splits
-    ├── models.py    baseline and proposed models (Assignment 1 step 2)
-    └── utils.py     competition metric, backtest, plots
+    ├── models.py    baseline strategies (constant, volatility targeting, momentum, linear)
+    └── utils.py     competition metric, backtest, walk-forward evaluation, plots
 ```
 
 ## How to run
 
-1. Open a notebook in Google Colab (File → Open notebook → GitHub → paste this repo URL).
+1. Open the notebook in Google Colab:
+   [assignment1_eda_baseline.ipynb](https://colab.research.google.com/github/Kutay33/GROUP60_CENG313/blob/main/assignment1_eda_baseline.ipynb)
 2. Run the first cell. It clones the repo, asks for your `kaggle.json`
-   (Kaggle → Settings → API → *Create New Token*) and downloads the data to `data/`.
+   (Kaggle → Settings → API Tokens → *Legacy API Credentials* → create a legacy API key) and downloads the data to `data/`.
    You must have joined the competition on Kaggle first.
 3. Run the remaining cells.
 
@@ -72,6 +82,7 @@ Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into 
 | 2026-11-05 | Repository created, README skeleton, data loading and metric helpers |
 | 2026-11-05 | EDA notebook |
 | 2026-11-05 | Ran EDA on real data, fixed Colab setup cell, wrote EDA takeaways |
+| 2026-11-09 | Baseline models and walk-forward evaluation; baseline comparison in the notebook |
 
 ## Kaggle submission history
 
