@@ -99,6 +99,20 @@ def fill_missing(X: pd.DataFrame, medians: pd.Series | None = None) -> tuple[pd.
     return X.fillna(medians).fillna(0.0), medians
 
 
+def add_lagged_returns(df: pd.DataFrame) -> pd.DataFrame:
+    """Add yesterday's known returns to the training data.
+
+    On the test set Kaggle provides `lagged_forward_returns` etc. (the previous day's realised values).
+    The training set does not, so we build the same columns by shifting the targets one day.
+    """
+    df = df.copy()
+    for col in LEAK_COLS:
+        lag_col = f"lagged_{col}"
+        if lag_col not in df.columns and col in df.columns:
+            df[lag_col] = df[col].shift(1)
+    return df
+
+
 def time_split(df: pd.DataFrame, valid_frac: float = 0.2) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Chronological hold-out split (no shuffling - this is a time series)."""
     n_valid = int(len(df) * valid_frac)
