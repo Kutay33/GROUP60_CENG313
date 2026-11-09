@@ -92,3 +92,43 @@ def plot_wealth(bt: pd.DataFrame, title: str = "Strategy vs buy & hold", ax=None
     ax.set_title(title)
     ax.legend()
     return ax
+
+
+def walk_forward_evaluate(model, df: pd.DataFrame, folds) -> pd.DataFrame:
+    """Train on the past, score on the next block, for every (train_idx, valid_idx) fold.
+
+    Returns one row per fold with the competition score and a few summary statistics.
+    """
+    rows = []
+    for k, (tr_idx, va_idx) in enumerate(folds):
+        train, valid = df.iloc[tr_idx], df.iloc[va_idx]
+        model.fit(train)
+        pos = model.predict_position(valid)
+        stats = summary_stats(valid, pos)
+        stats.update({
+            "fold": k,
+            "valid_start": int(valid["date_id"].iloc[0]),
+            "valid_end": int(valid["date_id"].iloc[-1]),
+            "market_score": score_frame(valid, np.ones(len(valid))),
+        })
+        rows.append(stats)
+    return pd.DataFrame(rows).set_index("fold")
+
+
+def compare_models(models: dict, df: pd.DataFrame, folds) -> tuple[pd.DataFrame, dict]:
+    """Run walk_forward_evaluate for several models. Returns a summary table and per-fold results."""
+    folds = list(folds)
+    per_fold, summary = {}, []
+    for name, model in models.items():
+        res = walk_forward_evaluate(model, df, folds)
+        per_fold[name] = res
+        summary.append({
+            "model": name,
+            "mean_score": res["score"].mean(),
+            "std_score": res["score"].std(),
+            "folds_beating_market": int((res["score"] > res["market_score"]).sum()),
+            "mean_position": res["mean_position"].mean(),
+            "ann_vol": res["ann_vol"].mean(),
+        })
+    table = pd.DataFrame(summary).set_index("model").sort_values("mean_score", ascending=False)
+    return table, per_fold
