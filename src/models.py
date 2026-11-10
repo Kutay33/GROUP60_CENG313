@@ -160,6 +160,65 @@ class LinearModel(BaseModel):
         return pd.Series(coef, index=self.features).sort_values(key=np.abs, ascending=False)
 
 
+class LightGBMModel(LinearModel):
+    """Gradient-boosted trees (LightGBM) on all features, predicting next-day excess return.
+
+    Same signal -> position mapping as LinearModel. Small, heavily regularised trees because the
+    signal is weak and noisy (see EDA). Trees handle missing values natively, so no imputation.
+    """
+
+    def __init__(self, scale: float = 0.5, n_estimators: int = 300, learning_rate: float = 0.02,
+                 num_leaves: int = 15, min_child_samples: int = 200, seed: int = 42):
+        self.scale = scale
+        self.params = dict(n_estimators=n_estimators, learning_rate=learning_rate, num_leaves=num_leaves,
+                           min_child_samples=min_child_samples, subsample=0.8, subsample_freq=1,
+                           colsample_bytree=0.7, reg_lambda=5.0, random_state=seed, verbose=-1)
+        self.name = "lightgbm"
+        self.features = None
+        self.model = None
+        self.pred_mean, self.pred_std = 0.0, 1.0
+
+    def fit(self, df):
+        from lightgbm import LGBMRegressor
+
+        self.features = D.feature_columns(df)
+        self.model = LGBMRegressor(**self.params).fit(df[self.features], df[D.TARGET])
+        pred = self.model.predict(df[self.features])
+        self.pred_mean, self.pred_std = pred.mean(), pred.std() or 1.0
+        return self
+
+    def predict_signal(self, df):
+        return (self.model.predict(df[self.features]) - self.pred_mean) / self.pred_std
+
+    def feature_importance(self) -> pd.Series:
+        imp = self.model.booster_.feature_importance(importance_type="gain")
+        return pd.Series(imp, index=self.features).sort_values(ascending=False)
+
+
+class OnlinePredictor:
+    """Wraps a fitted model for Kaggle's evaluation API, which sends one day at a time.
+
+    Rolling-window models (volatility targeting, momentum) need recent history, so the predictor keeps
+    the training rows plus every test row it has seen and predicts the position for the newest day.
+    """
+
+    def __init__(self, model: BaseModel, train_df: pd.DataFrame, history: int = 600):
+        self.model = model
+        self.history = history
+        cols = [c for c in train_df.columns if c not in D.LEAK_COLS]
+        self.buffer = train_df[cols].copy()
+
+    def predict_one(self, test_row: pd.DataFrame) -> float:
+        test_row = test_row.copy()
+        date_id = int(test_row["date_id"].iloc[0])
+        past = self.buffer[self.buffer["date_id"] < date_id]
+        frame = pd.concat([past.tail(self.history), test_row[past.columns.intersection(test_row.columns)]],
+                          ignore_index=True)
+        self.buffer = pd.concat([past, frame.tail(1)], ignore_index=True)
+        pos = float(self.model.predict_position(frame)[-1])
+        return float(np.clip(pos, MIN_POSITION, MAX_POSITION))
+
+
 def baseline_zoo() -> dict[str, BaseModel]:
     """All Assignment 1 baselines with their default settings."""
     models = [
@@ -170,11 +229,13 @@ def baseline_zoo() -> dict[str, BaseModel]:
         MomentumModel(window=252),
         LinearModel("ridge", alpha=1000.0),
         LinearModel("elasticnet", alpha=1e-4, l1_ratio=0.5),
+        LightGBMModel(),
     ]
     return {m.name: m for m in models}
 
 
 __all__ = [
-    "ConstantModel", "BestConstantModel", "VolTargetModel", "MomentumModel", "LinearModel",
+    "ConstantModel", "BestConstantModel", "VolTargetModel", "MomentumModel", "LinearModel", "LightGBMModel",
+    "OnlinePredictor",
     "baseline_zoo", "signal_to_position", "clip_position", "TRADING_DAYS",
 ]
