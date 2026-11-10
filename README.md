@@ -1,6 +1,6 @@
 # GROUP60_CENG313 – Hull Tactical Market Prediction
 
-CENG313 term project. We work on the Kaggle competition
+CENG313 term project. I work on the Kaggle competition
 **[Hull Tactical – Market Prediction](https://www.kaggle.com/competitions/hull-tactical-market-prediction)**.
 
 ## Team
@@ -11,7 +11,7 @@ CENG313 term project. We work on the Kaggle competition
 
 ## Competition
 
-Every trading day we decide how much of the S&P 500 to hold. The prediction is a **position between 0 and 2**
+Every trading day the model decides how much of the S&P 500 to hold. The prediction is a **position between 0 and 2**
 (0 = all cash, 1 = fully invested, 2 = 2× leverage). The score is a **volatility‑adjusted Sharpe ratio**:
 the Sharpe ratio is penalised when the strategy is more than 1.2× as volatile as the market or earns less
 than the market. Submissions run as Kaggle notebooks through the competition's evaluation API, one day at a time.
@@ -31,7 +31,9 @@ The data is not stored in this repository (see `.gitignore`); the notebooks down
 **Assignment 1 – EDA & baselines** (`assignment1_eda_baseline.ipynb`)
 - EDA: missing‑value structure, target distribution, volatility clustering, feature–target correlations and their stability.
 - Baselines (`src/models.py`), compared with 5-fold walk-forward validation:
-  buy & hold, best past constant, volatility targeting (21/63 days), 1-year momentum, Ridge and ElasticNet on all features.
+  buy & hold, best past constant, volatility targeting (21/63 days), 1-year momentum, Ridge, ElasticNet and LightGBM on all features.
+- Kaggle submission (`kaggle_submission.ipynb`): the best baseline (volatility targeting, 21 days) served day by day through the evaluation API.
+- Main finding: scaling exposure by recent volatility beats buy & hold; predicting the return direction from the raw features does not.
 
 **Assignment 2 – Proposed solution** (`assignment2_solution.ipynb`)
 - *(to be added)*
@@ -47,6 +49,7 @@ Mean competition score (adjusted Sharpe) over 5 walk-forward folds (validation f
 | Volatility targeting (63 d) | 0.420 | 2 / 5 | |
 | Buy & hold (position = 1) | 0.418 | – | |
 | ElasticNet | 0.390 | 2 / 5 | |
+| LightGBM | 0.385 | 1 / 5 | |
 | Ridge | 0.327 | 1 / 5 | |
 | Best past constant | 0.315 | 1 / 5 | |
 
@@ -57,10 +60,11 @@ GROUP60_CENG313/
 ├── README.md
 ├── requirements.txt
 ├── assignment1_eda_baseline.ipynb
+├── kaggle_submission.ipynb         Kaggle notebook for the late submission
 ├── assignment2_solution.ipynb      (Assignment 2)
 └── src/
     ├── data.py      loading, feature groups, missing values, time-series splits
-    ├── models.py    baseline strategies (constant, volatility targeting, momentum, linear)
+    ├── models.py    baseline strategies (constant, volatility targeting, momentum, linear, LightGBM), online predictor
     └── utils.py     competition metric, backtest, walk-forward evaluation, plots
 ```
 
@@ -73,6 +77,9 @@ GROUP60_CENG313/
    You must have joined the competition on Kaggle first.
 3. Run the remaining cells.
 
+**Kaggle submission:** see the instructions at the top of `kaggle_submission.ipynb`
+(upload `src/` as a Kaggle Dataset, import the notebook into the competition, turn internet off, submit).
+
 Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into `data/`, then start Jupyter.
 
 ## Progress log
@@ -83,9 +90,14 @@ Locally: `pip install -r requirements.txt`, put `train.csv` and `test.csv` into 
 | 2026-11-05 | EDA notebook |
 | 2026-11-05 | Ran EDA on real data, fixed Colab setup cell, wrote EDA takeaways |
 | 2026-11-09 | Baseline models and walk-forward evaluation; baseline comparison in the notebook |
+| 2026-11-10 | LightGBM baseline, online predictor for the evaluation API, Kaggle submission notebook |
 
 ## Kaggle submission history
 
-| Date | Notebook / version | Model | Public score |
-|------|--------------------|-------|-------------:|
-| | | | |
+   | Date | Notebook / version | Model | Public score |
+   |------|--------------------|-------|-------------:|
+   | 2026-11-10 | [kaggle_submission.ipynb](https://www.kaggle.com/code/cemilkutayzkul/notebookf783772543) – Version 2 | Volatility targeting (21 d) | n/a – submissions disabled |
+
+   Late submissions are disabled for this competition ("Submissions have been disabled for this competition", checked on 2026-11-10).
+   The submission notebook was verified with the official `kaggle_evaluation` gateway in a local dry run, and the model is evaluated
+   with walk-forward validation instead (adjusted Sharpe 0.452, see *Results*).
