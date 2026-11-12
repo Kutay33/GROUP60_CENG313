@@ -119,6 +119,18 @@ def time_split(df: pd.DataFrame, valid_frac: float = 0.2) -> tuple[pd.DataFrame,
     return df.iloc[:-n_valid].copy(), df.iloc[-n_valid:].copy()
 
 
+def holdout_split(df: pd.DataFrame, test_size: float = 0.2) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Hold out the last `test_size` share of the rows as a test set (course rule for closed competitions).
+
+    Uses sklearn's train_test_split with shuffle=False: the rows are dates, so a random split would put
+    future days into the training set and leak information. random_state has no effect without shuffling.
+    """
+    from sklearn.model_selection import train_test_split
+
+    train, test = train_test_split(df, test_size=test_size, shuffle=False)
+    return train.copy(), test.copy()
+
+
 def walk_forward_folds(n: int, n_folds: int = 5, valid_size: int | None = None, gap: int = 0):
     """Expanding-window folds: train on [0, t), validate on [t + gap, t + gap + valid_size).
 

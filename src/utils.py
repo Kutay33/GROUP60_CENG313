@@ -132,3 +132,20 @@ def compare_models(models: dict, df: pd.DataFrame, folds) -> tuple[pd.DataFrame,
         })
     table = pd.DataFrame(summary).set_index("model").sort_values("mean_score", ascending=False)
     return table, per_fold
+
+
+def holdout_evaluate(models: dict, train: pd.DataFrame, test: pd.DataFrame, history: int = 300) -> pd.DataFrame:
+    """Fit each model on `train` and score it on `test` with the competition metric.
+
+    The last `history` training days are prepended when predicting, so rolling-window models
+    (volatility targeting, momentum) have the same information they would have had in real time.
+    """
+    rows = []
+    for name, model in models.items():
+        model.fit(train)
+        frame = pd.concat([train.tail(history), test])
+        pos = model.predict_position(frame)[-len(test):]
+        stats = summary_stats(test, pos)
+        stats["model"] = name
+        rows.append(stats)
+    return pd.DataFrame(rows).set_index("model").sort_values("score", ascending=False)
